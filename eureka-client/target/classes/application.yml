@@ -1,0 +1,15 @@
+spring:
+  application:
+    name: eureka-client
+  security:
+    user:  # eureka注册中心监控页面，登录时需要的用户认证
+      name: hsc
+      password: 123456
+server:
+  port: 8601
+eureka:
+  client:
+    service-url:
+      defaultZone: http://${spring.security.user.name}:${spring.security.user.password}@eureka1:8501/eureka/,http://${spring.security.user.name}:${spring.security.user.password}@eureka2:8502/eureka/,http://${spring.security.user.name}:${spring.security.user.password}@eureka3:8503/eureka/
+#      defaultZone: http://hsc:123456@eureka1:8501/eureka/,http://hsc:123456@eureka2:8502/eureka/,http://hsc:123456@eureka3:8503/eureka/
+#      defaultZone: http://eureka1:8501/eureka/,http://eureka2:8502/eureka/,http://eureka3:8503/eureka/   #如果没有设置访问安全认证，则不需要用户名和密码

@@ -1,0 +1,57 @@
+spring:
+  application:
+    name: eureka-server
+  profiles:
+    active: eureka1 #默认生效配置eureka1
+  security:
+    user:  # eureka监控页面需要的用户认证
+      name: hsc
+      password: 123456
+eureka:
+  client:
+    register-with-eureka: true  #是否注册到eureka上，如果注册中心是只有一个节点，则应该false。
+    fetch-registry: true  #是否在注册中心上检索服务，如果注册中心是只有一个节点，则应该false。
+  server:
+    enable-self-preservation: false #关闭注册中心的保护机制，Eureka 会统计15分钟之内心跳失败的比例低于85%将会触发保护机制，不剔除服务提供者，如果关闭服务注册中心将不可用的实例正确剔除
+
+
+#注册中心eureka1的配置（也可单独作为配置文件application-eureka1.yml)
+---
+spring:
+  profiles: eureka1
+server:
+  port: 8501
+eureka:
+  client:
+    service-url:
+      defaultZone: http://${spring.security.user.name}:${spring.security.user.password}@eureka2:8502/eureka/,http://${spring.security.user.name}:${spring.security.user.password}@eureka3:8503/eureka/
+  instance:
+    hostname: eureka1  #当前实例的主机名称,需要在hosts文件里配置127.0.0.1 eureka1（windows路径 C:\Windows\System32\drivers\etc,linux 路径/etc)
+
+
+#注册中心eureka2的配置（也可单独作为配置文件application-eureka2.yml)
+---
+spring:
+  profiles: eureka2
+server:
+  port: 8502
+eureka:
+  client:
+    service-url:
+      defaultZone: http://${spring.security.user.name}:${spring.security.user.password}@eureka1:8501/eureka/,http://${spring.security.user.name}:${spring.security.user.password}@eureka3:8503/eureka/
+  instance:
+    hostname: eureka2  #当前实例的主机名称,需要在hosts文件里配置127.0.0.1 eureka2（windows路径 C:\Windows\System32\drivers\etc,linux 路径/etc)
+
+
+#注册中心eureka3的配置（也可单独作为配置文件application-eureka3.yml)
+---
+spring:
+  profiles: eureka3
+server:
+  port: 8503
+eureka:
+  client:
+    service-url:
+      defaultZone: http://${spring.security.user.name}:${spring.security.user.password}@eureka1:8501/eureka/,http://${spring.security.user.name}:${spring.security.user.password}@eureka2:8502/eureka/
+  instance:
+    hostname: eureka3 #当前实例的主机名称,需要在hosts文件里配置127.0.0.1 eureka2（windows路径 C:\Windows\System32\drivers\etc,linux 路径/etc)

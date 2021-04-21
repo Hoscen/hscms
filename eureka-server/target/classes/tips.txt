@@ -1,0 +1,53 @@
+
+注册中心
+http://localhost:8501
+http://localhost:8502
+http://localhost:8503
+用户名:hsc  密码：123456
+
+
+注意点：
+1、pom依赖
+       <!--eureka 服务端基本配置-->
+              <dependency>
+                  <groupId>org.springframework.cloud</groupId>
+                  <artifactId>spring-cloud-starter-netflix-eureka-server</artifactId>
+              </dependency>
+              <!--eureka 服务端用户认证和健康检查-->
+              <dependency>
+                  <groupId>org.springframework.boot</groupId>
+                  <artifactId>spring-boot-starter-security</artifactId>
+              </dependency>
+
+2、启动类注解
+@EnableEurekaServer
+
+3、hosts文件设置
+ 需要在hosts文件里配置127.0.0.1 eureka1 eureka2 eureka3（windows路径 C:\Windows\System32\drivers\etc,linux 路径/etc)
+
+4、eureka server url 安全访问
+spring:
+  security:
+    user:  # eureka监控页面需要的用户认证
+      name: hsc
+      password: 123456
+
+      defaultZone: http://${spring.security.user.name}:${spring.security.user.password}@eureka1:8501/eureka/,http://${spring.security.user.name}:${spring.security.user.password}@eureka2:8502/eureka/,http://${spring.security.user.name}:${spring.security.user.password}@eureka3:8503/eureka/
+#      defaultZone: http://eureka1:8501/eureka/,http://eureka2:8502/eureka/,http://eureka3:8503/eureka/   #如果没有设置访问安全认证，则不需要用户名和密码
+
+5、若开起了安全访问，则关闭csrf，否则eureka客户端无法注册
+/**
+ * 关闭csrf
+ */
+@EnableWebSecurity
+public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
+
+    @Override
+    protected void configure(HttpSecurity http) throws Exception {
+
+        http.csrf().disable().authorizeRequests().anyRequest().authenticated().and().httpBasic();
+        super.configure(http);
+
+    }
+
+}

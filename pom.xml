@@ -48,8 +48,8 @@
     </build>
 
     <modules>
-<!--        <module>hscms-eureka</module>-->
-<!--        <module>hscms-eureka-client</module>-->
+        <module>eureka-server</module>
+        <module>eureka-client</module>
     </modules>
 
 </project>
