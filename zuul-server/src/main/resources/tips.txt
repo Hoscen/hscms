@@ -1,0 +1,72 @@
+可访问的url
+http://localhost:8621/feignGetCall  直接访问feign-client
+http://localhost:8901/feign-client/feignGetCall 通过代理访问feign-client
+http://localhost:8901/hsc1/feignGetCall 通过代理访问（自定义名）feign-client
+
+
+http://localhost:8601/hello 直接访问eureka-client服务
+http://localhost:8901/eureka-client/hello 通过代理访问eureka-client服务
+http://localhost:8901/hsc/hello 通过代理访问（自定义名）eureka-client服务
+
+http://localhost:8631/hystrix/noTimeoutCall  直接访问hystrix-ribbon-client
+http://localhost:8901/hystrix-ribbon-client/hystrix/noTimeoutCall  代理访问
+
+
+对请求不做代理的
+http://localhost:8631/hystrix/restTemplateCall 直接访问hystrix-ribbon-client
+http://localhost:8901/hystrix-ribbon-client/hystrix/restTemplateCall  通过代理访问hystrix-ribbon-client
+
+
+加了模拟鉴权校验后（记先得开启自定义的过滤器ZuulAuthFilter）：
+http://localhost:8901/eureka-client/hello?token=1 通过代理访问eureka-client服务
+http://localhost:8901/hsc/hello?token=1 通过代理访问（自定义名）eureka-client服务
+
+注意点：
+1、pom依赖
+        <!--eureka客户端-->
+        <dependency>
+            <groupId>org.springframework.cloud</groupId>
+            <artifactId>spring-cloud-starter-netflix-eureka-client</artifactId>
+        </dependency>
+        <!--zuul网关-->
+        <dependency>
+            <groupId>org.springframework.cloud</groupId>
+            <artifactId>spring-cloud-starter-netflix-zuul</artifactId>
+        </dependency>
+
+2、启动类注解
+@EnableDiscoveryClient
+@EnableZuulProxy
+3、使用
+直接启动服务，然后在eureka注册中心界面找一个服务的url，直接访问
+然后将端口号换成zuul服务的端口，然后加上/服务名，后面紧接原服务url即可
+http://localhost:8621/feignGetCall  直接访问feign-client
+http://localhost:8901/feign-client/feignGetCall 通过代理访问feign-client
+
+
+
+3、yml配置
+#      可通过zuul.routes.名称.path和zuul.routes.名称.serviceId指定访问微服务对应的url路径：
+zuul:
+  routes:
+    api1:   #此处名子可以任意取
+      path: /hsc1/**      #自定义代理访问时url的前缀
+      serviceId: feign-client   #服务名  将服务feign-client的所有url访问映射为/hsc/....
+
+    ##简洁写法(如果只有path，和serviceId两个属性，则可以简写为以下形式
+    eureka-client: /hsc/**    #注意：映射名不能重复，否则映射会绑定在第一次出现的服务商。将访问eureka-client服务的所有url映射为/hsc/....
+  ignored-patterns:  #对哪些请求不做代理
+    - /hystrix-ribbon-client/hystrix/restTemplateCall
+
+#防止代理访问超时
+hystrix:
+  command:
+    default:
+      execution:
+        isolation:
+          thread:
+            timeoutInMilliseconds: 6000  #hystrix 默认超时时间设置
+ribbon:
+  ConnectTimeout: 3000
+  ReadTimeout: 60000
+
